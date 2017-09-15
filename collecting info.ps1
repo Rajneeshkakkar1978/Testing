@@ -1,2 +1,0 @@
-Add-AzureRMAccount
-Get-AzureRMVM
