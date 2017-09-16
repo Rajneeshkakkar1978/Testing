@@ -1,39 +1,40 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
-
-		 
-#Linux Mode
-#Vagrant.configure("2") do |config|
-#   config.vm.box = "hashicorp/precise64"
-#   config.vm.provision :shell, path: "linuxProvisioning.sh"
-#   config.vm.network :forwarded_port, guest: 8080, host: 4567
-#end
-
-#Windows Mode
 Vagrant.configure("2") do |config|
-	config.vm.box = 'opentable/win-2012r2-standard-amd64-nocm'
-	config.vm.guest = :windows
-	config.vm.boot_timeout = 300
-	config.vm.communicator = "winrm"
-	config.winrm.username = 'vagrant'
-	config.winrm.password = 'vagrant'
-
-        config.vm.provider :virtualbox do |vb|
-                vb.name = "Win2012_Server"
-		vb.gui = true
-		vb.customize ["modifyvm", :id, "--memory", "1024"]
-		vb.customize ["modifyvm", :id, "--vram", "64"]
-		vb.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
-	end
-  
-	config.vm.network :forwarded_port, guest: 8080, host: 4567
-
-        config.vm.provision "shell", inline: <<-SCRIPT
-             Set-Item WSMan:\\localhost\\Shell\\MaxShellsPerUser -Value 100
-             Set-Item WSMan:\\localhost\\Service\\MaxConcurrentOperationsPerUser -Value 100
-        SCRIPT
-
-	config.vm.provision :shell, path: "windowsProvisioning_Part1.cmd"
-        config.vm.provision :shell, path: "windowsProvisioning_Part2.cmd"
-
+  config.vm.provider "virtualbox"
+  config.vm.box = "ubuntu/trusty64"
+  #  config.vm.define "haproxy"
+  #  config.vm.define "web-application"
+  #  config.vm.define "db"
+  config.vm.define "haproxy" do |haproxy|
+    haproxy.vm.hostname = 'haproxy'
+    haproxy.vm.network "private_network", ip: "192.168.50.222"
+    haproxy.vm.provision "ansible" do |ansible|
+      ansible.playbook = "setup-haproxy.yml"
+    end
+    haproxy.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", 256]
+      v.customize ["modifyvm", :id, "--name", "haproxy"]
+    end
+  end
+  config.vm.define "webapps" do |webapps|
+    webapps.vm.hostname = 'webapps'
+    webapps.vm.network "private_network", ip: "192.168.50.223"
+    webapps.vm.provision "ansible" do |ansible|
+      ansible.playbook = "setup-webapps.yml"
+    end
+    webapps.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", 256]
+      v.customize ["modifyvm", :id, "--name", "webapps"]
+    end
+  end
+  config.vm.define "db" do |db|
+    db.vm.hostname = 'db'
+    db.vm.network "private_network", ip: "192.168.50.224"
+    db.vm.provision "ansible" do |ansible|
+      ansible.playbook = "setup-db.yml"
+    end
+    db.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", 512]
+      v.customize ["modifyvm", :id, "--name", "db"]
+    end
+  end
 end
