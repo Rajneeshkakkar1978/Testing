@@ -14,3 +14,10 @@ Step 3: Created a New virtual machine by using these two simple commands
            ready to `vagrant up` your first virtual environment! Please read
            the comments in the Vagrantfile as well as documentation on
 `          vagrantup.com` for more information on using Vagrant.
+
+   Step 4: vagrant up
+   Step 5: vagrant ssh
+   
+   Login to VM via SSH
+   SSH to Ubuntu Machines
+  
